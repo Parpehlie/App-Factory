@@ -1,0 +1,22 @@
+{
+  "name": "app-factory",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Portfolio factory for weekly-shipped iOS + Android apps (Expo + RevenueCat + PostHog).",
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "create-app": "node scripts/create-app/index.mjs"
+  },
+  "devDependencies": {
+    "turbo": "2.10.4",
+    "typescript": "~5.9.3"
+  }
+}
