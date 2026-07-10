@@ -1,0 +1,2 @@
+app,bundle_id,concept,launch_date,status,days_live,organic_downloads,d1_retention,d7_retention,paywall_views,paywall_to_paid,install_to_paid,trials_started,revenue,mrr,commission_assumption,verdict,notes
+Demo Habit,com.you.demohabit,Streak-based habit tracker for students,2026-07-10,live,7,340,0.28,0.11,210,0.045,0.026,18,42.00,31.00,15,watch,"Paywall CTR ok; test annual-first offer"
