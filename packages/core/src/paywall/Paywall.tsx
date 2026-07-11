@@ -5,7 +5,7 @@ import type { PurchasesOffering } from 'react-native-purchases';
 import { track } from '../analytics';
 import { usePremium } from '../billing/PremiumProvider';
 import { config } from '../config';
-import { FallbackPaywall, type FallbackPaywallProps, type PaywallContent } from './FallbackPaywall';
+import { FallbackPaywall, type FallbackPaywallProps, type PaywallContent, type PaywallLabels } from './FallbackPaywall';
 
 export interface PaywallProps {
   onDismiss: () => void;
@@ -25,6 +25,8 @@ export interface PaywallProps {
   offering?: PurchasesOffering;
   /** Content overrides for the fallback paywall. */
   content?: Partial<PaywallContent>;
+  /** Localized chrome labels for the fallback paywall (restore/terms/period/plan names…). */
+  labels?: Partial<PaywallLabels>;
   privacyUrl?: string;
   termsUrl?: string;
   /** Swap in a fully custom fallback if you outgrow the built-in one. */
@@ -47,6 +49,7 @@ export function Paywall({
   useRemoteUI = true,
   offering,
   content,
+  labels,
   privacyUrl,
   termsUrl,
   fallback: Fallback = FallbackPaywall,
@@ -81,6 +84,7 @@ export function Paywall({
         onDismiss={onDismiss}
         onPurchased={onPurchased}
         content={content}
+        labels={labels}
         offering={offering}
         privacyUrl={privacyUrl}
         termsUrl={termsUrl}

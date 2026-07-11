@@ -79,6 +79,16 @@ describe('programming (§9)', () => {
     for (const days of [2, 3, 4] as const) expect(generatePlan(profile('gym', [], 3, days)).length).toBe(days * 12);
   });
 
+  it('can retain a 12-week runway after the initial block, with stable ids and weeks', () => {
+    const p = profile('gym', [], 3, 3);
+    const initial = generatePlan(p);
+    const rolling = generatePlan(p, createInitialProgress(p), initial[0]!.scheduledAt, 39);
+    expect(rolling).toHaveLength(39);
+    expect(rolling[0]!.id).toBe(initial[0]!.id);
+    expect(rolling.at(-1)!.index).toBe(39);
+    expect(rolling.at(-1)!.week).toBe(13);
+  });
+
   it('deload is week 5 only, and week 5 is a uniform 2 sets — including home+shoulder (regression)', () => {
     for (const { tag, plan } of everyPlan()) {
       for (const w of plan) {
@@ -97,6 +107,15 @@ describe('programming (§9)', () => {
     const afterUpper = applyProgress({ progress: prog } as never, [{ exerciseId: 'db_bench', sets: sets([12, 12, 12], upper) }]);
     expect(afterLower['goblet_squat']!.currentLoadKg).toBe(lower + 2.5);
     expect(afterUpper['db_bench']!.currentLoadKg).toBe(upper + 1);
+  });
+
+  it('does not increase load when top reps were completed at the user’s limit', () => {
+    const p = profile('gym', []);
+    const prog = createInitialProgress(p);
+    const load = prog['goblet_squat']!.currentLoadKg;
+    const atLimit = sets([12, 12, 12], load, 0);
+    const after = applyProgress({ progress: prog } as never, [{ exerciseId: 'goblet_squat', sets: atLimit, effort: 'limit' }]);
+    expect(after['goblet_squat']!.currentLoadKg).toBe(load);
   });
 
   it('drops load 10% after two consecutive sessions under 8 reps', () => {

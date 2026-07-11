@@ -22,11 +22,37 @@ export interface PaywallContent {
   cta: string;
 }
 
+/**
+ * Chrome strings around the store-provided price/title. Every field is optional on the
+ * prop; the English defaults below keep existing apps unchanged, while a localized app
+ * (e.g. IronHale) can pass translated copy.
+ */
+export interface PaywallLabels {
+  restore: string;
+  terms: string;
+  privacy: string;
+  perYear: string;
+  perMonth: string;
+  yearly: string;
+  monthly: string;
+  sixMonth: string;
+  threeMonth: string;
+  twoMonth: string;
+  weekly: string;
+  lifetime: string;
+  freeTrial: string;
+  nTrial: (n: number, unit: string) => string;
+  startTrial: (label: string) => string;
+  noProducts: string;
+}
+
 export interface FallbackPaywallProps {
   placement: string;
   onDismiss: () => void;
   onPurchased: () => void;
   content?: Partial<PaywallContent>;
+  /** Localized chrome labels (restore/terms/period/plan names…). Falls back to English. */
+  labels?: Partial<PaywallLabels>;
   /** Pre-fetched offering (else the current offering is loaded). */
   offering?: PurchasesOffering;
   privacyUrl?: string;
@@ -49,26 +75,45 @@ const DEFAULT_CONTENT: PaywallContent = {
   cta: 'Continue',
 };
 
+const DEFAULT_LABELS: PaywallLabels = {
+  restore: 'Restore',
+  terms: 'Terms',
+  privacy: 'Privacy',
+  perYear: 'year',
+  perMonth: 'month',
+  yearly: 'Yearly',
+  monthly: 'Monthly',
+  sixMonth: '6 Months',
+  threeMonth: '3 Months',
+  twoMonth: '2 Months',
+  weekly: 'Weekly',
+  lifetime: 'Lifetime',
+  freeTrial: 'Free trial',
+  nTrial: (n, unit) => `${n}-${unit} free trial`,
+  startTrial: (label) => `Start ${label}`,
+  noProducts: 'No subscription products available. Configure an Offering in RevenueCat.',
+};
+
 /** Detects a free-trial intro phase on a package (iOS introPrice / Android free phase). */
-function trialLabel(pkg: PurchasesPackage): string | null {
+function trialLabel(pkg: PurchasesPackage, labels: PaywallLabels): string | null {
   const intro = pkg.product.introPrice;
   if (!intro || intro.price > 0) return null;
   const unit = intro.periodUnit?.toLowerCase() ?? 'day';
   const n = intro.periodNumberOfUnits ?? 0;
-  if (n <= 0) return 'Free trial';
-  return `${n}-${unit} free trial`;
+  if (n <= 0) return labels.freeTrial;
+  return labels.nTrial(n, unit);
 }
 
-function packageTypeLabel(pkg: PurchasesPackage): string {
+function packageTypeLabel(pkg: PurchasesPackage, labels: PaywallLabels): string {
   // e.g. "$ANNUAL" -> "Yearly". Falls back to the raw identifier.
   const map: Record<string, string> = {
-    ANNUAL: 'Yearly',
-    SIX_MONTH: '6 Months',
-    THREE_MONTH: '3 Months',
-    TWO_MONTH: '2 Months',
-    MONTHLY: 'Monthly',
-    WEEKLY: 'Weekly',
-    LIFETIME: 'Lifetime',
+    ANNUAL: labels.yearly,
+    SIX_MONTH: labels.sixMonth,
+    THREE_MONTH: labels.threeMonth,
+    TWO_MONTH: labels.twoMonth,
+    MONTHLY: labels.monthly,
+    WEEKLY: labels.weekly,
+    LIFETIME: labels.lifetime,
   };
   return map[pkg.packageType] ?? pkg.product.title ?? pkg.identifier;
 }
@@ -84,6 +129,7 @@ export function FallbackPaywall({
   onDismiss,
   onPurchased,
   content,
+  labels,
   offering,
   privacyUrl,
   termsUrl,
@@ -92,6 +138,7 @@ export function FallbackPaywall({
 }: FallbackPaywallProps) {
   const insets = useSafeAreaInsets();
   const c = useMemo(() => ({ ...DEFAULT_CONTENT, ...content }), [content]);
+  const l = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -119,12 +166,12 @@ export function FallbackPaywall({
   }, [offering]);
 
   const selected = packages.find((p) => p.identifier === selectedId) ?? null;
-  const selectedTrial = selected ? trialLabel(selected) : null;
+  const selectedTrial = selected ? trialLabel(selected, l) : null;
 
   const handlePurchase = useCallback(async () => {
     if (!selected || busy) return;
     setBusy(true);
-    const trial = trialLabel(selected);
+    const trial = trialLabel(selected, l);
     if (trial) {
       track('trial_start', { placement, product: selected.product.identifier });
     }
@@ -142,7 +189,7 @@ export function FallbackPaywall({
       });
       onPurchased();
     }
-  }, [selected, busy, placement, onPurchased, analyticsProperties]);
+  }, [selected, busy, placement, onPurchased, analyticsProperties, l]);
 
   const handleRestore = useCallback(async () => {
     if (busy) return;
@@ -161,9 +208,9 @@ export function FallbackPaywall({
     if (allowDismiss) onDismiss();
   }, [allowDismiss, placement, onDismiss]);
 
-  const period = selected?.packageType === 'ANNUAL' ? 'year' : selected?.packageType === 'MONTHLY' ? 'month' : null;
+  const period = selected?.packageType === 'ANNUAL' ? l.perYear : selected?.packageType === 'MONTHLY' ? l.perMonth : null;
   const ctaLabel = selectedTrial
-    ? `Start ${selectedTrial}`
+    ? l.startTrial(selectedTrial)
     : selected
       ? `${c.cta}${period ? ` — ${selected.product.priceString}/${period}` : ''}`
       : c.cta;
@@ -195,14 +242,12 @@ export function FallbackPaywall({
         {loading ? (
           <ActivityIndicator color="#FFFFFF" style={{ marginVertical: 32 }} />
         ) : packages.length === 0 ? (
-          <Text style={styles.empty}>
-            No subscription products available. Configure an Offering in RevenueCat.
-          </Text>
+          <Text style={styles.empty}>{l.noProducts}</Text>
         ) : (
           <View style={styles.plans}>
             {packages.map((pkg) => {
               const active = pkg.identifier === selectedId;
-              const trial = trialLabel(pkg);
+              const trial = trialLabel(pkg, l);
               return (
                 <TouchableOpacity
                   key={pkg.identifier}
@@ -215,7 +260,7 @@ export function FallbackPaywall({
                       {active ? <View style={styles.radioDot} /> : null}
                     </View>
                     <View>
-                      <Text style={styles.planName}>{packageTypeLabel(pkg)}</Text>
+                      <Text style={styles.planName}>{packageTypeLabel(pkg, l)}</Text>
                       {trial ? <Text style={styles.planTrial}>{trial}</Text> : null}
                     </View>
                   </View>
@@ -245,16 +290,16 @@ export function FallbackPaywall({
 
         <View style={styles.legalRow}>
           <TouchableOpacity onPress={handleRestore}>
-            <Text style={styles.legalLink}>Restore</Text>
+            <Text style={styles.legalLink}>{l.restore}</Text>
           </TouchableOpacity>
           {termsUrl ? (
             <TouchableOpacity onPress={() => Linking.openURL(termsUrl)}>
-              <Text style={styles.legalLink}>Terms</Text>
+              <Text style={styles.legalLink}>{l.terms}</Text>
             </TouchableOpacity>
           ) : null}
           {privacyUrl ? (
             <TouchableOpacity onPress={() => Linking.openURL(privacyUrl)}>
-              <Text style={styles.legalLink}>Privacy</Text>
+              <Text style={styles.legalLink}>{l.privacy}</Text>
             </TouchableOpacity>
           ) : null}
         </View>

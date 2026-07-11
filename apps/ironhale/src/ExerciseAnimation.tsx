@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { colors } from './theme';
+import { useT } from './i18n';
 import type { Exercise, Pattern } from './types';
 
 /**
@@ -54,6 +55,7 @@ const APath = Animated.createAnimatedComponent(Path);
 const ACircle = Animated.createAnimatedComponent(Circle);
 
 export function ExerciseDemo({ exercise, compact = false }: { exercise: Exercise; compact?: boolean }) {
+  const t = useT();
   const progress = useSharedValue(0);
   const pose = POSES[exercise.pattern];
   const a = pose.a;
@@ -109,7 +111,7 @@ export function ExerciseDemo({ exercise, compact = false }: { exercise: Exercise
         <ACircle animatedProps={headProps} r={8.5} fill={colors.green} />
       </Svg>
       <View style={styles.pill}>
-        <Text style={styles.pillText}>2.5S FORM LOOP</Text>
+        <Text style={styles.pillText}>{t.workout.formLoop}</Text>
       </View>
     </View>
   );
@@ -118,5 +120,5 @@ export function ExerciseDemo({ exercise, compact = false }: { exercise: Exercise
 const styles = StyleSheet.create({
   demo: { height: 168, borderRadius: 18, backgroundColor: '#E6EDE7', overflow: 'hidden' },
   pill: { position: 'absolute', right: 10, top: 10, backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 9 },
-  pillText: { fontSize: 9, fontWeight: '900', letterSpacing: 0.8, color: colors.green },
+  pillText: { fontSize: 12, fontWeight: '900', letterSpacing: 0.5, color: colors.green },
 });

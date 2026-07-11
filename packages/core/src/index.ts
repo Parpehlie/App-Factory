@@ -52,7 +52,7 @@ export type { OnboardingStep, OnboardingFlowProps } from './onboarding';
 
 // paywall
 export { Paywall, FallbackPaywall } from './paywall';
-export type { PaywallProps, FallbackPaywallProps, PaywallContent } from './paywall';
+export type { PaywallProps, FallbackPaywallProps, PaywallContent, PaywallLabels } from './paywall';
 
 // remote config / kill switch (placeholder)
 export { fetchRemoteConfig, useRemoteConfig } from './remote-config';

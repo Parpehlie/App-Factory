@@ -31,6 +31,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#173D28',
     },
   },
+  androidStatusBar: {
+    backgroundColor: '#F4F3EE',
+    barStyle: 'dark-content',
+    translucent: false,
+  },
   plugins: [
     'expo-router',
     [

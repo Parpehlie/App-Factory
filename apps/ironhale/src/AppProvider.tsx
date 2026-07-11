@@ -18,8 +18,11 @@ export function AppProvider({children}:{children:React.ReactNode}) {
     commit(next); track('core_action',{action:'plan_generated'});
   },[commit,state]);
   const completeWorkout = useCallback(async (result:WorkoutResult) => {
-    const next={...state,history:[...state.history,result],progress:applyProgress(state,result.exercises)};
-    next.plan=generatePlan(next.profile!,next.progress,next.plan[0]?.scheduledAt ?? state.createdAt);
+    const next={...state,activeWorkout:null,history:[...state.history,result],progress:applyProgress(state,result.exercises)};
+    const profile=next.profile!;
+    // Always leave the member a full 12-week runway. This keeps the promise of
+    // an ongoing adaptive programme without changing ids for completed sessions.
+    next.plan=generatePlan(profile,next.progress,next.plan[0]?.scheduledAt ?? state.createdAt,next.history.length+profile.daysPerWeek*12);
     commit(next); track('core_action',{action:'workout_complete',index:result.workoutIndex});
   },[commit,state]);
   const reset=useCallback(async()=>{await clearState();commit(initialState());},[commit]);

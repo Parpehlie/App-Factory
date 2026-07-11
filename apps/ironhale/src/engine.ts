@@ -1,5 +1,5 @@
 import { EXERCISES, EXERCISE_BY_ID } from './exercises';
-import type { AppState, Exercise, ExerciseProgress, ExerciseResult, Joint, Pattern, PlannedWorkout, Profile, WorkoutExercise } from './types';
+import type { AppState, Exercise, ExerciseProgress, ExerciseResult, Joint, Pattern, PlannedWorkout, Profile, WorkoutExercise, WorkoutTitleKey } from './types';
 
 const SAFE = 1;
 const TOLERATED = 2;
@@ -33,21 +33,21 @@ const BASE: Record<Profile['equipment'], Record<Pattern, string | null>> = {
   bodyweight: { squat:'chair_sit_to_stand', hinge:'glute_bridge', horizontal_push:'wall_pushup', vertical_push:null, horizontal_pull:'inverted_row_table', vertical_pull:null },
 };
 
-const SPLITS: Record<2|3|4, { title:string; patterns:Pattern[] }[]> = {
+const SPLITS: Record<2|3|4, { titleKey:WorkoutTitleKey; patterns:Pattern[] }[]> = {
   2: [
-    { title:'Full Body A', patterns:['squat','horizontal_push','horizontal_pull','hinge'] },
-    { title:'Full Body B', patterns:['hinge','vertical_push','vertical_pull','squat'] },
+    { titleKey:'full_body_a', patterns:['squat','horizontal_push','horizontal_pull','hinge'] },
+    { titleKey:'full_body_b', patterns:['hinge','vertical_push','vertical_pull','squat'] },
   ],
   3: [
-    { title:'Full Body A', patterns:['squat','horizontal_push','horizontal_pull','hinge'] },
-    { title:'Full Body B', patterns:['hinge','vertical_push','vertical_pull','squat'] },
-    { title:'Full Body C', patterns:['squat','horizontal_pull','horizontal_push','hinge'] },
+    { titleKey:'full_body_a', patterns:['squat','horizontal_push','horizontal_pull','hinge'] },
+    { titleKey:'full_body_b', patterns:['hinge','vertical_push','vertical_pull','squat'] },
+    { titleKey:'full_body_c', patterns:['squat','horizontal_pull','horizontal_push','hinge'] },
   ],
   4: [
-    { title:'Upper A', patterns:['horizontal_push','horizontal_pull','vertical_push','vertical_pull'] },
-    { title:'Lower A', patterns:['squat','hinge','squat','hinge'] },
-    { title:'Upper B', patterns:['vertical_push','vertical_pull','horizontal_push','horizontal_pull'] },
-    { title:'Lower B', patterns:['hinge','squat','hinge','squat'] },
+    { titleKey:'upper_a', patterns:['horizontal_push','horizontal_pull','vertical_push','vertical_pull'] },
+    { titleKey:'lower_a', patterns:['squat','hinge','squat','hinge'] },
+    { titleKey:'upper_b', patterns:['vertical_push','vertical_pull','horizontal_push','horizontal_pull'] },
+    { titleKey:'lower_b', patterns:['hinge','squat','hinge','squat'] },
   ],
 };
 
@@ -61,10 +61,16 @@ export function createInitialProgress(profile: Profile): Record<string, Exercise
   return Object.fromEntries(EXERCISES.map((e) => [e.id, { exerciseId:e.id, currentLoadKg:e.progressionMode === 'load' ? startingLoad(e,profile) : 0, tierIndex:e.tierIndex ?? 0, consecutiveUnderMin:0 }]));
 }
 
-export function generatePlan(profile: Profile, progress = createInitialProgress(profile), startAt = Date.now()): PlannedWorkout[] {
+/**
+ * Build a rolling plan. `workoutCount` is deliberately a count rather than a
+ * date: the ids remain stable when targets are recalculated after each session.
+ * Callers keep a 12-week runway ahead, so Premium never reaches an artificial
+ * "block complete" endpoint.
+ */
+export function generatePlan(profile: Profile, progress = createInitialProgress(profile), startAt = Date.now(), workoutCount = profile.daysPerWeek * 12): PlannedWorkout[] {
   const split = SPLITS[profile.daysPerWeek];
   const gapDays = profile.daysPerWeek === 2 ? 3.5 : profile.daysPerWeek === 3 ? 2.3 : 1.75;
-  const total = profile.daysPerWeek * 12;
+  const total = Math.max(profile.daysPerWeek * 12, workoutCount);
   return Array.from({length:total}, (_,index) => {
     const template = split[index % split.length]!;
     const week = Math.floor(index / profile.daysPerWeek) + 1;
@@ -92,7 +98,7 @@ export function generatePlan(profile: Profile, progress = createInitialProgress(
       const row = exercises.find((x) => x.exerciseId === 'chest_supported_db_row') ?? exercises.find((x) => EXERCISE_BY_ID[x.exerciseId]?.pattern === 'horizontal_pull');
       if (row) { row.sets += 1; row.extraSet = true; }
     }
-    return { id:`workout-${index+1}`, index:index+1, week, title:template.title, scheduledAt:startAt + index*gapDays*86400000, exercises, isDeload };
+    return { id:`workout-${index+1}`, index:index+1, week, titleKey:template.titleKey, scheduledAt:startAt + index*gapDays*86400000, exercises, isDeload };
   });
 }
 

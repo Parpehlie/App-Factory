@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
+  LayoutAnimation,
+  Platform,
   ScrollView,
   type ImageSourcePropType,
   StyleSheet,
@@ -34,6 +37,10 @@ export interface OnboardingFlowProps {
   backgroundColor?: string;
   textColor?: string;
   mutedColor?: string;
+  /** Localized labels for the small navigation affordances. */
+  backLabel?: string;
+  busyLabel?: string;
+  continueLabel?: string;
   /** Analytics label distinguishing multiple funnels (e.g. A/B variant). */
   variant?: string;
 }
@@ -50,6 +57,9 @@ export function OnboardingFlow({
   backgroundColor = '#0B0B0F',
   textColor = '#FFFFFF',
   mutedColor = '#9CA3AF',
+  backLabel = 'Back',
+  busyLabel = 'Building your plan…',
+  continueLabel = 'Continue',
   variant = 'default',
 }: OnboardingFlowProps) {
   const insets = useSafeAreaInsets();
@@ -78,24 +88,49 @@ export function OnboardingFlow({
       setBusy(false);
       return;
     }
+    if (Platform.OS !== 'web') LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIndex((i) => Math.min(i + 1, steps.length - 1));
     setBusy(false);
   }, [isLast, onComplete, step, steps.length, variant]);
+
+  const previous = useCallback(() => {
+    if (index === 0 || busy) return;
+    // A small native transition makes a correction feel intentional rather than
+    // like the user has fallen out of the funnel. It is a no-op where unsupported.
+    if (Platform.OS !== 'web') LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIndex((i) => Math.max(0, i - 1));
+  }, [busy, index]);
 
   if (!step) return null;
 
   return (
     <View style={[styles.container, { backgroundColor, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
-      <View style={styles.dots}>
-        {steps.map((s, i) => (
-          <View
-            key={s.id}
-            style={[
-              styles.dot,
-              { backgroundColor: i <= index ? primaryColor : '#2A2A31' },
-            ]}
-          />
-        ))}
+      <View style={styles.progressHeader}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          accessibilityHint="Return to the previous onboarding question"
+          disabled={index === 0 || busy}
+          onPress={previous}
+          hitSlop={10}
+          style={[styles.backButton, (index === 0 || busy) && styles.backButtonHidden]}
+        >
+          <Text style={[styles.backLabel, { color: textColor }]}>‹</Text>
+          <Text style={[styles.backText, { color: mutedColor }]}>{backLabel}</Text>
+        </TouchableOpacity>
+        <View accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: steps.length, now: index + 1 }} style={styles.dots}>
+          {steps.map((s, i) => (
+            <View
+              key={s.id}
+              style={[
+                styles.dot,
+                i === index && styles.dotActive,
+                { backgroundColor: i <= index ? primaryColor : '#D9DDD7' },
+              ]}
+            />
+          ))}
+        </View>
+        <Text style={[styles.stepCount, { color: mutedColor }]}>{index + 1}/{steps.length}</Text>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
@@ -111,7 +146,8 @@ export function OnboardingFlow({
         onPress={() => void next()}
         disabled={step.canContinue === false || busy}
       >
-        <Text style={styles.ctaLabel}>{busy ? 'Building your plan…' : step.cta ?? (isLast ? 'Get Started' : 'Continue')}</Text>
+        {busy ? <ActivityIndicator color="#FFFFFF" /> : null}
+        <Text style={[styles.ctaLabel, busy && styles.ctaLabelBusy]}>{busy ? busyLabel : step.cta ?? (isLast ? 'Get Started' : continueLabel)}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -123,17 +159,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#0B0B0F',
     paddingHorizontal: 24,
   },
+  progressHeader: {
+    height: 34,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  backButton: {
+    width: 64,
+    height: 34,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButtonHidden: { opacity: 0, pointerEvents: 'none' },
+  backLabel: { fontSize: 29, lineHeight: 29, fontWeight: '400', marginTop: -3 },
+  backText: { fontSize: 14, fontWeight: '700', marginLeft: 1 },
+  stepCount: { width: 64, textAlign: 'right', fontSize: 13, fontWeight: '700' },
   dots: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 5,
     justifyContent: 'center',
-    marginBottom: 24,
   },
   dot: {
-    width: 24,
-    height: 4,
-    borderRadius: 2,
+    width: 12,
+    height: 5,
+    borderRadius: 3,
   },
+  dotActive: { width: 25 },
   body: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -147,14 +200,15 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: 30,
+    lineHeight: 36,
     fontWeight: '700',
     textAlign: 'center',
   },
   description: {
     color: '#9CA3AF',
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 17,
+    lineHeight: 25,
     textAlign: 'center',
     paddingHorizontal: 8,
   },
@@ -162,11 +216,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
   ctaLabel: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '600',
   },
+  ctaLabelBusy: { marginLeft: 10 },
   ctaDisabled: { opacity: 0.45 },
 });

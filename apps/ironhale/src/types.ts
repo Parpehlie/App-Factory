@@ -49,11 +49,21 @@ export interface WorkoutExercise {
   substitutionReason?: Joint;
 }
 
+export type WorkoutTitleKey =
+  | 'full_body_a'
+  | 'full_body_b'
+  | 'full_body_c'
+  | 'upper_a'
+  | 'lower_a'
+  | 'upper_b'
+  | 'lower_b';
+
 export interface PlannedWorkout {
   id: string;
   index: number;
   week: number;
-  title: string;
+  /** Structured title key — localized at render so a language switch retitles stored plans. */
+  titleKey: WorkoutTitleKey;
   scheduledAt: number;
   exercises: WorkoutExercise[];
   isDeload: boolean;
@@ -69,6 +79,7 @@ export interface SetResult {
 export interface ExerciseResult {
   exerciseId: string;
   sets: SetResult[];
+  effort?: 'comfortable' | 'hard' | 'limit';
 }
 
 export interface WorkoutResult {
@@ -86,12 +97,27 @@ export interface ExerciseProgress {
   consecutiveUnderMin: number;
 }
 
+export type UnitSystem = 'kg' | 'lb';
+
+export interface ActiveWorkoutDraft {
+  workoutId: string;
+  startedAt: number;
+  elapsedSeconds: number;
+  exerciseIndex: number;
+  results: Record<number, ExerciseResult>;
+  restEndsAt: number | null;
+  updatedAt: number;
+}
+
 export interface AppState {
-  schemaVersion: 1;
+  schemaVersion: 3;
   profile: Profile | null;
   plan: PlannedWorkout[];
   history: WorkoutResult[];
   progress: Record<string, ExerciseProgress>;
   onboardingDraft: Partial<Profile>;
+  activeWorkout: ActiveWorkoutDraft | null;
+  unitSystem: UnitSystem;
+  restSeconds: 60 | 90 | 120;
   createdAt: number;
 }

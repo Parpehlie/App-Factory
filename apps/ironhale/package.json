@@ -9,7 +9,7 @@
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --root ../.. --config vitest.config.ts",
     "doctor": "expo install --check"
   },
   "dependencies": {

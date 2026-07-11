@@ -11,6 +11,7 @@ import {
   trackInstallOnce,
 } from '@app-factory/core';
 import { AppProvider } from '../src/AppProvider';
+import { I18nProvider } from '../src/i18n';
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
@@ -26,6 +27,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <PremiumProvider debug={__DEV__}>
+          <I18nProvider>
           <AppProvider>
           <StatusBar style="dark" />
           <Stack
@@ -41,6 +43,7 @@ export default function RootLayout() {
             <Stack.Screen name="workout/[id]" options={{ gestureEnabled: false }} />
           </Stack>
           </AppProvider>
+          </I18nProvider>
         </PremiumProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
