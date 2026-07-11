@@ -19,6 +19,7 @@ export interface PaywallContent {
   subtitle: string;
   benefits: string[];
   footnote: string;
+  cta: string;
 }
 
 export interface FallbackPaywallProps {
@@ -30,6 +31,8 @@ export interface FallbackPaywallProps {
   offering?: PurchasesOffering;
   privacyUrl?: string;
   termsUrl?: string;
+  analyticsProperties?: Record<string, string | number | boolean>;
+  allowDismiss?: boolean;
 }
 
 const DEFAULT_CONTENT: PaywallContent = {
@@ -43,6 +46,7 @@ const DEFAULT_CONTENT: PaywallContent = {
   ],
   footnote:
     'Subscription auto-renews until cancelled. Manage or cancel in your store account settings.',
+  cta: 'Continue',
 };
 
 /** Detects a free-trial intro phase on a package (iOS introPrice / Android free phase). */
@@ -83,6 +87,8 @@ export function FallbackPaywall({
   offering,
   privacyUrl,
   termsUrl,
+  analyticsProperties,
+  allowDismiss = true,
 }: FallbackPaywallProps) {
   const insets = useSafeAreaInsets();
   const c = useMemo(() => ({ ...DEFAULT_CONTENT, ...content }), [content]);
@@ -132,10 +138,11 @@ export function FallbackPaywall({
         currency: selected.product.currencyCode,
         had_trial: trial != null,
         ui: 'fallback',
+        ...analyticsProperties,
       });
       onPurchased();
     }
-  }, [selected, busy, placement, onPurchased]);
+  }, [selected, busy, placement, onPurchased, analyticsProperties]);
 
   const handleRestore = useCallback(async () => {
     if (busy) return;
@@ -151,20 +158,23 @@ export function FallbackPaywall({
 
   const handleDismiss = useCallback(() => {
     track('paywall_dismiss', { placement, ui: 'fallback' });
-    onDismiss();
-  }, [placement, onDismiss]);
+    if (allowDismiss) onDismiss();
+  }, [allowDismiss, placement, onDismiss]);
 
+  const period = selected?.packageType === 'ANNUAL' ? 'year' : selected?.packageType === 'MONTHLY' ? 'month' : null;
   const ctaLabel = selectedTrial
     ? `Start ${selectedTrial}`
     : selected
-      ? 'Continue'
-      : 'Continue';
+      ? `${c.cta}${period ? ` — ${selected.product.priceString}/${period}` : ''}`
+      : c.cta;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-      <TouchableOpacity style={styles.close} onPress={handleDismiss} accessibilityRole="button">
-        <Text style={styles.closeText}>✕</Text>
-      </TouchableOpacity>
+      {allowDismiss ? (
+        <TouchableOpacity style={[styles.close, { top: insets.top + 8 }]} onPress={handleDismiss} accessibilityRole="button">
+          <Text style={styles.closeText}>✕</Text>
+        </TouchableOpacity>
+      ) : null}
 
       <ScrollView
         contentContainerStyle={styles.scroll}

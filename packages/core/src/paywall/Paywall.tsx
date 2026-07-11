@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import RevenueCatUI from 'react-native-purchases-ui';
 import type { PurchasesOffering } from 'react-native-purchases';
@@ -29,6 +29,10 @@ export interface PaywallProps {
   termsUrl?: string;
   /** Swap in a fully custom fallback if you outgrow the built-in one. */
   fallback?: React.ComponentType<FallbackPaywallProps>;
+  /** Extra stable product properties attached to conversion events. */
+  analyticsProperties?: Record<string, string | number | boolean>;
+  /** Hard gates cannot be dismissed. Defaults to true for soft paywalls. */
+  allowDismiss?: boolean;
 }
 
 /**
@@ -46,15 +50,18 @@ export function Paywall({
   privacyUrl,
   termsUrl,
   fallback: Fallback = FallbackPaywall,
+  analyticsProperties,
+  allowDismiss = true,
 }: PaywallProps) {
   const { refresh } = usePremium();
+  const analyticsRef = useRef(analyticsProperties);
 
   const platformKey =
     Platform.OS === 'ios' ? config.revenueCat.iosApiKey : config.revenueCat.androidApiKey;
   const remoteAvailable = useRemoteUI && platformKey.length > 0;
 
   useEffect(() => {
-    track('paywall_view', { placement, ui: remoteAvailable ? 'remote' : 'fallback' });
+    track('paywall_view', { placement, ui: remoteAvailable ? 'remote' : 'fallback', ...analyticsRef.current });
   }, [placement, remoteAvailable]);
 
   const handlePurchased = useCallback(async () => {
@@ -64,8 +71,8 @@ export function Paywall({
 
   const handleDismiss = useCallback(() => {
     track('paywall_dismiss', { placement, ui: 'remote' });
-    onDismiss();
-  }, [placement, onDismiss]);
+    if (allowDismiss) onDismiss();
+  }, [allowDismiss, placement, onDismiss]);
 
   if (!remoteAvailable) {
     return (
@@ -77,6 +84,8 @@ export function Paywall({
         offering={offering}
         privacyUrl={privacyUrl}
         termsUrl={termsUrl}
+        analyticsProperties={analyticsProperties}
+        allowDismiss={allowDismiss}
       />
     );
   }
@@ -86,13 +95,14 @@ export function Paywall({
       style={{ flex: 1 }}
       options={{
         ...(offering ? { offering } : {}),
-        displayCloseButton: true,
+        displayCloseButton: allowDismiss,
       }}
       onPurchaseCompleted={({ storeTransaction }) => {
         track('purchase', {
           placement,
           product: storeTransaction?.productIdentifier,
           ui: 'remote',
+          ...analyticsProperties,
         });
         void handlePurchased();
       }}

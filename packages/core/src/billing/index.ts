@@ -75,8 +75,13 @@ export async function getEntitlement(): Promise<EntitlementStatus> {
 
 /** The current offering (RevenueCat Experiments auto-assigns A/B variants here). */
 export async function getCurrentOffering(): Promise<PurchasesOffering | null> {
-  const offerings = await Purchases.getOfferings();
-  return offerings.current ?? null;
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.current ?? null;
+  } catch {
+    // Native RevenueCat unavailable (e.g. running in Expo Go). No offering to show.
+    return null;
+  }
 }
 
 export async function getOfferingPackages(): Promise<PurchasesPackage[]> {
@@ -109,7 +114,19 @@ export async function restorePurchases(): Promise<EntitlementStatus> {
 
 /** Subscribe to entitlement changes (renewals, restores, expirations). Returns an unsubscribe fn. */
 export function addEntitlementListener(cb: (status: EntitlementStatus) => void): () => void {
-  const listener = (info: CustomerInfo) => cb(mapEntitlement(info));
-  Purchases.addCustomerInfoUpdateListener(listener);
-  return () => Purchases.removeCustomerInfoUpdateListener(listener);
+  try {
+    const listener = (info: CustomerInfo) => cb(mapEntitlement(info));
+    Purchases.addCustomerInfoUpdateListener(listener);
+    return () => {
+      try {
+        Purchases.removeCustomerInfoUpdateListener(listener);
+      } catch {
+        /* already gone */
+      }
+    };
+  } catch {
+    // Native RevenueCat unavailable (e.g. Expo Go): no live entitlement updates.
+    // Premium stays inactive and the rest of the app boots normally.
+    return () => {};
+  }
 }

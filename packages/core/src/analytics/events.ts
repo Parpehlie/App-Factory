@@ -12,6 +12,7 @@ export const AnalyticsEvents = {
   TrialStart: 'trial_start',
   Purchase: 'purchase',
   Restore: 'restore',
+  CoreAction: 'core_action',
 } as const;
 
 export type AnalyticsEvent = (typeof AnalyticsEvents)[keyof typeof AnalyticsEvents];

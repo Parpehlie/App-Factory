@@ -25,6 +25,7 @@
 | `trial_start` | User starts a purchase on a package that has a free-trial intro. | `placement`, `product` |
 | `purchase` | Purchase completes successfully. | `placement`, `product`, `price?`, `currency?`, `had_trial?`, `ui` |
 | `restore` | User restores purchases. | `placement`, `active` (bool), `ui?` |
+| `core_action` | App-specific activation milestone. | `action`, `index?` |
 
 ### Property definitions
 
@@ -47,6 +48,10 @@ install
   → trial_start        (if trial offered)
   → purchase
 ```
+
+Apps use `core_action` for the small number of product actions between onboarding and
+purchase. IronHale emits `plan_generated`, `workout_complete` (with the one-based workout
+`index`) and `substitution_used`.
 
 ## Dashboard-relevant conversions
 

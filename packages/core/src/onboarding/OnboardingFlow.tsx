@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Image,
+  ScrollView,
   type ImageSourcePropType,
   StyleSheet,
   Text,
@@ -17,6 +18,12 @@ export interface OnboardingStep {
   image?: ImageSourcePropType;
   /** Overrides the primary button label for this step. */
   cta?: string;
+  /** Optional app-specific interactive content rendered below the description. */
+  content?: React.ReactNode;
+  /** Disable the primary action until this step is valid or finished. */
+  canContinue?: boolean;
+  /** Runs before advancing; useful for persisting a selection. */
+  onContinue?: () => void | Promise<void>;
 }
 
 export interface OnboardingFlowProps {
@@ -24,6 +31,9 @@ export interface OnboardingFlowProps {
   /** Called after the last step. Typically navigates to the paywall. */
   onComplete: () => void;
   primaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  mutedColor?: string;
   /** Analytics label distinguishing multiple funnels (e.g. A/B variant). */
   variant?: string;
 }
@@ -37,10 +47,14 @@ export function OnboardingFlow({
   steps,
   onComplete,
   primaryColor = '#6366F1',
+  backgroundColor = '#0B0B0F',
+  textColor = '#FFFFFF',
+  mutedColor = '#9CA3AF',
   variant = 'default',
 }: OnboardingFlowProps) {
   const insets = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
+  const [busy, setBusy] = useState(false);
   const step = steps[index];
   const isLast = index === steps.length - 1;
 
@@ -52,21 +66,26 @@ export function OnboardingFlow({
       step_count: steps.length,
       variant,
     });
-  }, [index, step, steps.length, variant]);
+  }, [index, step?.id, steps.length, variant]);
 
-  const next = useCallback(() => {
+  const next = useCallback(async () => {
+    if (step?.canContinue === false) return;
+    setBusy(true);
+    await step?.onContinue?.();
     if (isLast) {
       track('onboarding_complete', { step_count: steps.length, variant });
       onComplete();
+      setBusy(false);
       return;
     }
     setIndex((i) => Math.min(i + 1, steps.length - 1));
-  }, [isLast, onComplete, steps.length, variant]);
+    setBusy(false);
+  }, [isLast, onComplete, step, steps.length, variant]);
 
   if (!step) return null;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
+    <View style={[styles.container, { backgroundColor, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
       <View style={styles.dots}>
         {steps.map((s, i) => (
           <View
@@ -79,18 +98,20 @@ export function OnboardingFlow({
         ))}
       </View>
 
-      <View style={styles.body}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
         {step.image ? <Image source={step.image} style={styles.image} resizeMode="contain" /> : null}
-        <Text style={styles.title}>{step.title}</Text>
-        <Text style={styles.description}>{step.description}</Text>
-      </View>
+        <Text style={[styles.title, { color: textColor }]}>{step.title}</Text>
+        <Text style={[styles.description, { color: mutedColor }]}>{step.description}</Text>
+        {step.content}
+      </ScrollView>
 
       <TouchableOpacity
         accessibilityRole="button"
-        style={[styles.cta, { backgroundColor: primaryColor }]}
-        onPress={next}
+        style={[styles.cta, { backgroundColor: primaryColor }, (step.canContinue === false || busy) && styles.ctaDisabled]}
+        onPress={() => void next()}
+        disabled={step.canContinue === false || busy}
       >
-        <Text style={styles.ctaLabel}>{step.cta ?? (isLast ? 'Get Started' : 'Continue')}</Text>
+        <Text style={styles.ctaLabel}>{busy ? 'Building your plan…' : step.cta ?? (isLast ? 'Get Started' : 'Continue')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -114,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   body: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
@@ -147,4 +168,5 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
+  ctaDisabled: { opacity: 0.45 },
 });

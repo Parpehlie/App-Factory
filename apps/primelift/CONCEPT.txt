@@ -1,0 +1,28 @@
+﻿IronHale
+
+
+Description : Programme de musculation adaptatif pour les 50+ : progression de force avec substitution automatique des exercices selon les articulations sensibles et fenêtres de récupération allongées.
+
+
+Cible : Adultes 50-70 ans (US / EU) voulant préserver leur force, masse musculaire et autonomie, en salle ou avec haltères à la maison.
+
+
+Problème : Les apps de muscu sont calibrées pour des trentenaires : volume et fréquence trop agressifs, exercices qui abîment genoux et épaules, aucune notion de récupération liée à l'âge. Les 50+ abandonnent ou se blessent.
+
+
+Monétisation : Freemium = 2 semaines de programme gratuites ; abonnement (~12,99$/mois, 79-99$/an) pour des programmes adaptatifs illimités, substitutions, suivi de force et rappels. Segment à fort pouvoir d'achat ; propension à payer prouvée par Fitbod et Ladder (~15-30$/mois).
+
+
+Rétention : Séances 2-3x/semaine avec progression de charge visible ; la courbe de force et l'enjeu d'autonomie donnent un motif de réabonnement durable, sur des années.
+
+
+Différenciations : Moteur de substitution articulaire (genou / épaule / dos sensible → variante équivalente) couplé à des fenêtres de récupération calibrées 50+ , un segment que Fitbod, Ladder et Caliber servent avec un moteur générique conçu pour des athlètes jeunes.
+
+
+Mots clés de recherche : strength training over 50', 'weight training for seniors', 'muscle after 50', 'sarcopenia workout'
+
+
+Atouts : Programmation joint-friendly par défaut UX simple à appréhender et lisible, séances autonomes sans bibliothèque vidéo (démos animées) : exécution taillée pour un public que les gros acteurs traitent comme un cas dégradé de leur produit principal.
+
+
+Risque : un gros acteur ajoute un 'mode 50+' ; prudence sur les claims santé et la prévention des blessures (cadrer explicitement : pas un avis médical).
