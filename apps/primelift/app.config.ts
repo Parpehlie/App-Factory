@@ -7,7 +7,7 @@ const IOS_BUNDLE_ID = 'com.parphelie.ironhale';
 const ANDROID_PACKAGE = 'com.parphelie.ironhale';
 const SCHEME = 'ironhale';
 const EAS_OWNER = 'parphelie';
-const EAS_PROJECT_ID = '8c6f6a26-6bd6-47c8-baa7-23a13976ddfc';
+const EAS_PROJECT_ID = '9961c88f-2866-4420-9882-9c745b896153';
 // ─── end identity ─────────────────────────────────────────────────────────────
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
