@@ -85,8 +85,10 @@ export function generatePlan(profile: Profile, progress = createInitialProgress(
       const plannedLoad=isDeload?baseLoad*0.9:week===6?baseLoad+(chosen.loadIncrementKg??1):baseLoad;
       exercises.push({ exerciseId:chosen.id, sets:isDeload ? 2 : 3, repMin:8, repMax:chosen.progressionMode === 'load' ? 12 : 15, targetLoadKg:chosen.progressionMode === 'load' ? Math.round(plannedLoad * 10)/10 : undefined, targetRir:2, substitutedFrom:chosen.id !== target.id ? target.id : undefined, substitutionReason:chosen.id !== target.id ? activeFlags(profile).find((j) => target.jointLoad[j] > SAFE) : undefined });
     }
-    // Home + sensitive shoulder: compensate the removed vertical pull with one row set.
-    if (profile.equipment === 'home_dumbbells' && profile.flaggedJoints.includes('shoulder') && !exercises.some((x) => EXERCISE_BY_ID[x.exerciseId]?.pattern === 'vertical_pull')) {
+    // Home + sensitive shoulder: the vertical pull is removed program-wide (§7), so add a
+    // compensating row set on the days that carry a row (the vertical-pull day itself has
+    // none). Skipped on the deload week so recovery weeks stay a uniform 2 sets (§9).
+    if (!isDeload && profile.equipment === 'home_dumbbells' && profile.flaggedJoints.includes('shoulder') && !exercises.some((x) => EXERCISE_BY_ID[x.exerciseId]?.pattern === 'vertical_pull')) {
       const row = exercises.find((x) => x.exerciseId === 'chest_supported_db_row') ?? exercises.find((x) => EXERCISE_BY_ID[x.exerciseId]?.pattern === 'horizontal_pull');
       if (row) { row.sets += 1; row.extraSet = true; }
     }
