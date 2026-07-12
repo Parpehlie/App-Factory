@@ -112,6 +112,12 @@ export async function restorePurchases(): Promise<EntitlementStatus> {
   return mapEntitlement(info);
 }
 
+/** Switch to a stable RevenueCat identity, used for controlled store-review access. */
+export async function logInBillingUser(appUserId: string): Promise<EntitlementStatus> {
+  const { customerInfo } = await Purchases.logIn(appUserId);
+  return mapEntitlement(customerInfo);
+}
+
 /** Subscribe to entitlement changes (renewals, restores, expirations). Returns an unsubscribe fn. */
 export function addEntitlementListener(cb: (status: EntitlementStatus) => void): () => void {
   try {

@@ -11,8 +11,10 @@ import {
   getEntitlement,
   initBilling,
   restorePurchases,
+  logInBillingUser,
   type EntitlementStatus,
 } from './index';
+import { config } from '../config';
 
 interface PremiumContextValue {
   /** True once billing is initialized and the first entitlement fetch has resolved. */
@@ -21,6 +23,7 @@ interface PremiumContextValue {
   isPremium: boolean;
   refresh: () => Promise<void>;
   restore: () => Promise<EntitlementStatus>;
+  activateReviewerAccess: (code: string) => Promise<boolean>;
 }
 
 const PremiumContext = createContext<PremiumContextValue | null>(null);
@@ -70,6 +73,17 @@ export function PremiumProvider({ children, appUserId, debug }: PremiumProviderP
     return s;
   }, []);
 
+  const activateReviewerAccess = useCallback(async (code: string) => {
+    if (!config.storeReview.code || code.trim() !== config.storeReview.code) return false;
+    try {
+      const next = await logInBillingUser('ironhale-store-review');
+      setStatus(next);
+      return next.isActive;
+    } catch {
+      return false;
+    }
+  }, []);
+
   const value = useMemo<PremiumContextValue>(
     () => ({
       ready,
@@ -77,8 +91,9 @@ export function PremiumProvider({ children, appUserId, debug }: PremiumProviderP
       isPremium: status?.isActive ?? false,
       refresh,
       restore,
+      activateReviewerAccess,
     }),
-    [ready, status, refresh, restore],
+    [ready, status, refresh, restore, activateReviewerAccess],
   );
 
   return <PremiumContext.Provider value={value}>{children}</PremiumContext.Provider>;

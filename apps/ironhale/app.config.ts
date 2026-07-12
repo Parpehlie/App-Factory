@@ -23,6 +23,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: IOS_BUNDLE_ID,
     supportsTablet: false,
+    infoPlist: {
+      // IronHale only relies on exempt system-provided HTTPS encryption.
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     package: ANDROID_PACKAGE,

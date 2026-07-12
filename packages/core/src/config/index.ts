@@ -22,6 +22,7 @@ const RAW = {
   ENABLE_WEB_PURCHASE: process.env.EXPO_PUBLIC_ENABLE_WEB_PURCHASE,
   WEB_PURCHASE_URL: process.env.EXPO_PUBLIC_WEB_PURCHASE_URL,
   REMOTE_CONFIG_URL: process.env.EXPO_PUBLIC_REMOTE_CONFIG_URL,
+  STORE_REVIEW_CODE: process.env.EXPO_PUBLIC_STORE_REVIEW_CODE,
 } as const;
 
 /** Per-app override surfaced through app.config.ts `extra`. Never a secret. */
@@ -64,6 +65,10 @@ export interface AppConfig {
   remoteConfig: {
     url: string | null;
   };
+  storeReview: {
+    /** Non-secret reviewer code. Keep unset in builds that do not need store review access. */
+    code: string | null;
+  };
 }
 
 const rawRegion = str('DEFAULT_REGION', 'auto');
@@ -90,6 +95,9 @@ export const config: AppConfig = {
   },
   remoteConfig: {
     url: str('REMOTE_CONFIG_URL') || null,
+  },
+  storeReview: {
+    code: str('STORE_REVIEW_CODE') || null,
   },
 };
 

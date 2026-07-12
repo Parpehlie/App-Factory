@@ -3,7 +3,7 @@ import { Paywall } from '@app-factory/core';
 import { useApp } from '../src/AppProvider';
 import { useT } from '../src/i18n';
 
-const PRIVACY_URL='https://parphelie.com/ironhale/privacy';
+const PRIVACY_URL='https://parphelie.com/projects/ironhale/privacy';
 const TERMS_URL='https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 const HARD=new Set(['session7_gate','substitution_gate','progress_gate']);
 

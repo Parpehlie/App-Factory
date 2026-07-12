@@ -17,6 +17,7 @@ export {
   purchasePackage,
   restorePurchases,
   addEntitlementListener,
+  logInBillingUser,
 } from './billing';
 export type { EntitlementStatus, PurchaseResult } from './billing';
 export { PremiumProvider, usePremium } from './billing/PremiumProvider';

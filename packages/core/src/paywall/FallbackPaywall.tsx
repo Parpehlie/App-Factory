@@ -91,7 +91,7 @@ const DEFAULT_LABELS: PaywallLabels = {
   freeTrial: 'Free trial',
   nTrial: (n, unit) => `${n}-${unit} free trial`,
   startTrial: (label) => `Start ${label}`,
-  noProducts: 'No subscription products available. Configure an Offering in RevenueCat.',
+  noProducts: 'Subscriptions are temporarily unavailable. Please try again later.',
 };
 
 /** Detects a free-trial intro phase on a package (iOS introPrice / Android free phase). */
