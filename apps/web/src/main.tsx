@@ -54,7 +54,7 @@ function LegalPage({ terms = false }: { terms?: boolean }) {
   const sections = terms ? [
     ['Éditeur du site', 'Parphélie — Raphaël Plassart, entrepreneur individuel (EI). SIREN : 942 906 157. SIRET : 942 906 157 00014. Siège : 18 rue de l’Abreuvoir, 91370 Verrières-le-Buisson, France. Contact : bonjour@parphelie.com — +33 7 69 89 28 62. TVA non applicable, article 293 B du Code général des impôts.'],
     ['Direction de la publication', 'Le directeur de la publication est Raphaël Plassart.'],
-    ['Hébergement', 'Le site est hébergé par Namecheap, Inc., 4600 East Washington Street, Suite 300, Phoenix, AZ 85034, États-Unis. Contact : support@namecheap.com.'],
+    ['Hébergement', 'Le site est hébergé par Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, États-Unis. Téléphone : +1 650 319 8930. Namecheap demeure le bureau d’enregistrement du nom de domaine.'],
     ['Propriété intellectuelle', 'Les textes, signes distinctifs, illustrations, interfaces et éléments graphiques présents sur ce site sont protégés. Toute reproduction ou utilisation sans autorisation préalable est interdite.'],
     ['Information fournie', 'Les informations sont présentées à titre général et peuvent évoluer. Parphélie s’efforce d’en assurer l’exactitude, sans garantir qu’elles soient exhaustives ou constamment à jour.'],
     ['Responsabilité', 'Parphélie ne saurait être responsable d’un dommage indirect lié à l’utilisation du site ou à l’impossibilité temporaire d’y accéder. IronHale ne fournit pas de conseil médical.'],
