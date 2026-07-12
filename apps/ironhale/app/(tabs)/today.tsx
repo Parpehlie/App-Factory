@@ -102,10 +102,7 @@ export default function Today() {
           <View style={s.contextDivider} />
           <ContextItem value={String(profile?.daysPerWeek ?? 3)} label={t.today.cadence(profile?.daysPerWeek ?? 3).replace(/^\d+\s*/, '')} />
           <View style={s.contextDivider} />
-          <View style={s.protectedContext}>
-            <Ionicons name="shield-checkmark-outline" size={17} color={colors.green} />
-            <Text numberOfLines={2} style={s.protectedText}>{protectedLabel}</Text>
-          </View>
+          <ContextItem icon="shield-checkmark-outline" value={String(profile?.flaggedJoints.length ?? 0)} label={protectedLabel.replace(/^\d+\s*/, '')} />
         </View>
 
         <View style={s.workoutCard}>
@@ -204,8 +201,8 @@ export default function Today() {
   );
 }
 
-function ContextItem({ value, label }: { value: string; label: string }) {
-  return <View style={s.contextItem}><Text style={s.contextValue}>{value}</Text><Text numberOfLines={1} style={s.contextLabel}>{label}</Text></View>;
+function ContextItem({ value, label, icon }: { value: string; label: string; icon?: React.ComponentProps<typeof Ionicons>['name'] }) {
+  return <View style={s.contextItem}><View style={s.contextValueRow}>{icon?<Ionicons name={icon} size={16} color={colors.green}/>:null}<Text style={s.contextValue}>{value}</Text></View><Text numberOfLines={2} style={s.contextLabel}>{label}</Text></View>;
 }
 
 function Meta({ icon, text }: { icon: React.ComponentProps<typeof Ionicons>['name']; text: string }) {
@@ -221,12 +218,11 @@ const s = StyleSheet.create({
   settingsButton: { width: 41, height: 41, borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   headline: { maxWidth: 345, fontSize: 30, lineHeight: 35, letterSpacing: -1, fontWeight: '900', color: colors.ink },
   contextRow: { minHeight: 74, borderRadius: 17, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 },
-  contextItem: { width: 65, alignItems: 'center' },
+  contextItem: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  contextValueRow: { minHeight: 23, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
   contextValue: { fontSize: 19, fontWeight: '900', color: colors.ink },
-  contextLabel: { marginTop: 2, fontSize: 12, fontWeight: '800', color: colors.muted, textTransform: 'uppercase' },
-  contextDivider: { width: 1, height: 36, backgroundColor: colors.line, marginHorizontal: 7 },
-  protectedContext: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 7 },
-  protectedText: { flex: 1, fontSize: 13, lineHeight: 18, fontWeight: '700', color: colors.green },
+  contextLabel: { minHeight: 30, marginTop: 2, fontSize: 12, lineHeight: 15, fontWeight: '800', color: colors.muted, textTransform: 'uppercase', textAlign: 'center' },
+  contextDivider: { width: 1, height: 38, backgroundColor: colors.line, marginHorizontal: 3 },
   workoutCard: { backgroundColor: colors.ink, borderRadius: 25, padding: 19, gap: 17, shadowColor: '#0B1710', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, elevation: 8 },
   cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   nextUp: { color: colors.lime, fontSize: 12, fontWeight: '900', letterSpacing: 1.25 },

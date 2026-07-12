@@ -258,7 +258,7 @@ export const de: Strings = {
     freeTrial: 'Gratis-Testphase',
     nTrial: (n, unit) => `${n} ${unit} gratis testen`,
     startTrial: (label) => `${label} starten`,
-    noProducts: 'Keine Abos verfügbar. Richten Sie ein Offering in RevenueCat ein.',
+    noProducts: 'Abonnements sind vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.',
   },
   notifications: {
     reminderTitle: 'Ihre nächste IronHale-Einheit ist bereit',

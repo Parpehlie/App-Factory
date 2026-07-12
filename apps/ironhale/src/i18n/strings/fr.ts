@@ -255,7 +255,7 @@ export const fr: Strings = {
     freeTrial: 'Essai gratuit',
     nTrial: (n, unit) => `${n} ${unit} d\'essai gratuit`,
     startTrial: (label) => `Démarrer ${label}`,
-    noProducts: 'Aucun abonnement disponible. Configurez une Offering dans RevenueCat.',
+    noProducts: 'Aucun abonnement n’est disponible pour le moment. Veuillez réessayer plus tard.',
   },
   notifications: {
     reminderTitle: 'Votre prochaine séance IronHale est prête',
