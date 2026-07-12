@@ -16,27 +16,59 @@ function Footer() {
   return <footer><div className="footer-main"><Logo /><p>Des applications pensées pour<br />la vraie vie.</p></div><div className="footer-links"><div><span>Explorer</span><a href="/">Accueil</a><a href="/#projets">Projets</a></div><div><span>Légal</span><a href="/privacy">Confidentialité</a><a href="/terms">Mentions légales</a></div><div><span>Contact</span><a href="mailto:bonjour@parphelie.com">bonjour@parphelie.com</a></div></div><div className="footer-bottom"><small>© {new Date().getFullYear()} Parphélie</small><small>Conçu en France, avec attention.</small></div></footer>;
 }
 
-function ContactForm() {
-  const [sent, setSent] = useState(false);
+const WEB3FORMS_ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || 'REMPLACE_MOI';
 
-  function prepareEmail(event: FormEvent<HTMLFormElement>) {
+type FormStatus = 'idle' | 'sending' | 'sent' | 'error';
+
+function ContactForm() {
+  const [status, setStatus] = useState<FormStatus>('idle');
+
+  async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
     const name = String(data.get('name') ?? '').trim();
     const email = String(data.get('email') ?? '').trim();
     const subject = String(data.get('subject') ?? '').trim();
     const message = String(data.get('message') ?? '').trim();
-    const body = `Bonjour,\n\n${message}\n\n—\n${name}\n${email}`;
 
-    window.location.href = `mailto:bonjour@parphelie.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSent(true);
+    setStatus('sending');
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `Parphélie — ${subject}`,
+          from_name: 'Formulaire du site Parphélie',
+          name,
+          email, // repris automatiquement en Reply-To par Web3Forms
+          message,
+          botcheck: data.get('botcheck') != null, // honeypot : true si un bot l'a coché
+        }),
+      });
+      const result = (await response.json()) as { success?: boolean };
+      if (!response.ok || !result.success) throw new Error('web3forms');
+      form.reset();
+      setStatus('sent');
+    } catch {
+      setStatus('error');
+    }
   }
 
-  return <form className="contact-form" onSubmit={prepareEmail}>
+  const helper: Record<FormStatus, string> = {
+    idle: 'Votre message arrive directement dans notre boîte. Réponse sous 48 h.',
+    sending: 'Envoi en cours…',
+    sent: 'Merci, votre message est bien parti. Nous vous répondrons vite.',
+    error: 'L’envoi a échoué. Réessayez, ou écrivez-nous à bonjour@parphelie.com.',
+  };
+
+  return <form className="contact-form" onSubmit={sendMessage}>
     <div className="form-row"><label>Votre nom<input name="name" type="text" autoComplete="name" required placeholder="Camille Martin" /></label><label>Votre e-mail<input name="email" type="email" autoComplete="email" required placeholder="camille@exemple.fr" /></label></div>
     <label>Votre sujet<select name="subject" defaultValue="Une idée à partager"><option>Une idée à partager</option><option>Parler d’un projet</option><option>Question à propos d’IronHale</option><option>Autre demande</option></select></label>
     <label>Votre message<textarea name="message" required rows={5} placeholder="Dites-nous ce qui vous amène…" /></label>
-    <div className="form-submit"><p>{sent ? 'Votre application de messagerie a été ouverte.' : 'En envoyant, votre application de messagerie s’ouvrira.'}</p><button type="submit">Préparer le message <Arrow /></button></div>
+    <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ display: 'none' }} />
+    <div className="form-submit"><p className={`form-status form-status--${status}`}>{helper[status]}</p><button type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Envoi…' : 'Envoyer le message'} <Arrow /></button></div>
   </form>;
 }
 
