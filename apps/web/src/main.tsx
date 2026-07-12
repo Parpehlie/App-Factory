@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { FormEvent, StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
@@ -16,13 +16,37 @@ function Footer() {
   return <footer><div className="footer-main"><Logo /><p>Des applications pensées pour<br />la vraie vie.</p></div><div className="footer-links"><div><span>Explorer</span><a href="/">Accueil</a><a href="/#projets">Projets</a></div><div><span>Légal</span><a href="/privacy">Confidentialité</a><a href="/terms">Mentions légales</a></div><div><span>Contact</span><a href="mailto:bonjour@parphelie.com">bonjour@parphelie.com</a></div></div><div className="footer-bottom"><small>© {new Date().getFullYear()} Parphélie</small><small>Conçu en France, avec attention.</small></div></footer>;
 }
 
+function ContactForm() {
+  const [sent, setSent] = useState(false);
+
+  function prepareEmail(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const name = String(data.get('name') ?? '').trim();
+    const email = String(data.get('email') ?? '').trim();
+    const subject = String(data.get('subject') ?? '').trim();
+    const message = String(data.get('message') ?? '').trim();
+    const body = `Bonjour,\n\n${message}\n\n—\n${name}\n${email}`;
+
+    window.location.href = `mailto:bonjour@parphelie.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setSent(true);
+  }
+
+  return <form className="contact-form" onSubmit={prepareEmail}>
+    <div className="form-row"><label>Votre nom<input name="name" type="text" autoComplete="name" required placeholder="Camille Martin" /></label><label>Votre e-mail<input name="email" type="email" autoComplete="email" required placeholder="camille@exemple.fr" /></label></div>
+    <label>Votre sujet<select name="subject" defaultValue="Une idée à partager"><option>Une idée à partager</option><option>Parler d’un projet</option><option>Question à propos d’IronHale</option><option>Autre demande</option></select></label>
+    <label>Votre message<textarea name="message" required rows={5} placeholder="Dites-nous ce qui vous amène…" /></label>
+    <div className="form-submit"><p>{sent ? 'Votre application de messagerie a été ouverte.' : 'En envoyant, votre application de messagerie s’ouvrira.'}</p><button type="submit">Préparer le message <Arrow /></button></div>
+  </form>;
+}
+
 function Home() {
   return <><Header /><main>
     <section className="hero"><div className="eyebrow"><span /> Studio d’applications mobiles</div><h1>Des outils numériques<br />qui <em>comptent.</em></h1><div className="hero-foot"><p>Parphélie transforme des besoins concrets en applications mobiles utiles, intuitives et conçues pour durer.</p><a className="round-link" href="#projets" aria-label="Découvrir nos projets">↓</a></div><div className="sun" aria-hidden="true"><span className="orbit orbit-one"/><span className="orbit orbit-two"/><span className="spark s1">✦</span><span className="spark s2">✦</span></div></section>
     <section className="manifesto" id="approche"><p className="section-label">Notre approche</p><h2>La technologie s’efface.<br /><em>L’usage reste.</em></h2><div className="principles"><article><b>01</b><h3>Partir du réel</h3><p>Un besoin précis, une audience claire, une solution sans détour.</p></article><article><b>02</b><h3>Soigner l’essentiel</h3><p>Une expérience lisible et calme, où chaque détail a une raison d’être.</p></article><article><b>03</b><h3>Construire pour durer</h3><p>Des produits respectueux, fiables et capables de grandir avec leurs usages.</p></article></div></section>
     <section className="projects" id="projets"><div className="projects-head"><div><p className="section-label">Nos projets</p><h2>En ce moment,<br />chez Parphélie.</h2></div><p>Une collection d’applications mobiles indépendantes, dans des univers variés, chacune née d’un problème qui mérite une réponse attentive.</p></div><a href="/projects/ironhale" className="project-card"><div className="project-copy"><span className="status">Disponible bientôt</span><div><p className="project-number">Projet — 01</p><h3>IronHale</h3><p>La force, pour longtemps.</p></div><span className="discover">Découvrir le projet <Arrow /></span></div><div className="project-visual"><img src="/ironhale-icon.png" alt="Icône de l’application IronHale" /></div></a>
     <div className="next-project"><span>02</span><p>Le prochain projet<br />prend forme.</p><i>À suivre</i></div></section>
-    <section className="closing"><p className="section-label">Une idée, une question ?</p><h2>Parlons de ce qui<br />mérite d’<em>exister.</em></h2><a href="mailto:bonjour@parphelie.com">bonjour@parphelie.com <Arrow /></a></section>
+    <section className="closing" id="contact"><div className="closing-copy"><p className="section-label">Une idée, une question ?</p><h2>Parlons de ce qui<br />mérite d’<em>exister.</em></h2><p>Un besoin à partager, un projet à imaginer ou simplement une question ? Écrivez-nous.</p><a href="mailto:bonjour@parphelie.com">bonjour@parphelie.com <Arrow /></a></div><ContactForm /></section>
   </main><Footer /></>;
 }
 
