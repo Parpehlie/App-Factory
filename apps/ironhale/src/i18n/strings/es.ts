@@ -106,6 +106,7 @@ export const es: Strings = {
     ready: 'Listo cuando tú lo estés.',
     done: 'HECHO',
     freeSession: (current) => `Sesión ${current} / 6 gratis`,
+    freePlanComplete: 'Plan gratuito completado · 6 / 6',
     freeRemaining: (n) => `Te ${n === 1 ? 'queda' : 'quedan'} ${n} ${n === 1 ? 'sesión' : 'sesiones'} gratis, sin tarjeta.`,
     freeReady: 'Tu próxima sesión progresiva te espera con Premium.',
     primeMember: '★ MIEMBRO PRIME',

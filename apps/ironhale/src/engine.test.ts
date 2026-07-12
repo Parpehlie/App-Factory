@@ -129,6 +129,31 @@ describe('programming (§9)', () => {
     expect(prog['goblet_squat']!.currentLoadKg).toBe(Math.round(load * 0.9 * 10) / 10);
   });
 
+  it('only ever labels a substitution with a genuinely flagged joint reason (§2 regression)', () => {
+    for (const { flags, tag, plan } of everyPlan())
+      for (const w of plan)
+        for (const x of w.exercises)
+          if (x.substitutedFrom)
+            assert.ok(x.substitutionReason && flags.includes(x.substitutionReason), `${tag} w${w.index} ${x.exerciseId} labelled adapted without a flagged joint`);
+  });
+
+  it('progresses from the load actually lifted, not the standing target (§9 regression)', () => {
+    const p = profile('gym', []);
+    const prog = createInitialProgress(p);
+    const target = prog['goblet_squat']!.currentLoadKg;
+    const lighter = target - 5; // hit every top rep, but 5 kg under target
+    const after = applyProgress({ progress: prog } as never, [{ exerciseId: 'goblet_squat', sets: sets([12, 12, 12], lighter) }]);
+    expect(after['goblet_squat']!.currentLoadKg).toBe(lighter + 2.5);
+  });
+
+  it('holds the standing target on a sub-top session below that weight (does not drop)', () => {
+    const p = profile('gym', []);
+    const prog = createInitialProgress(p);
+    const target = prog['goblet_squat']!.currentLoadKg;
+    const after = applyProgress({ progress: prog } as never, [{ exerciseId: 'goblet_squat', sets: sets([10, 10, 10], target - 5) }]);
+    expect(after['goblet_squat']!.currentLoadKg).toBe(target);
+  });
+
   it('tier progression: three sets of 15 advances the bodyweight chain', () => {
     const prog = createInitialProgress(profile('bodyweight', [], 1));
     const t0 = prog['wall_pushup']!.tierIndex;

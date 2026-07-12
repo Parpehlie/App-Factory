@@ -106,6 +106,7 @@ export const en: Strings = {
     ready: 'Ready when you are.',
     done: 'DONE',
     freeSession: (current) => `Session ${current} / 6 free`,
+    freePlanComplete: 'Free plan complete · 6 / 6',
     freeRemaining: (n) => `${n} card-free session${n === 1 ? '' : 's'} remaining.`,
     freeReady: 'Your next progressive session is ready with Premium.',
     primeMember: '★ PRIME MEMBER',

@@ -74,6 +74,7 @@ export interface Strings {
     ready: string;
     done: string;
     freeSession: (current: number) => string;
+    freePlanComplete: string;
     freeRemaining: (n: number) => string;
     freeReady: string;
     primeMember: string;

@@ -109,6 +109,7 @@ export const de: Strings = {
     ready: 'Bereit, wenn Sie es sind.',
     done: 'FERTIG',
     freeSession: (current) => `Einheit ${current} / 6 gratis`,
+    freePlanComplete: 'Gratisplan abgeschlossen · 6 / 6',
     freeRemaining: (n) => `Noch ${n} kostenlose Einheit${n === 1 ? '' : 'en'}, ganz ohne Karte.`,
     freeReady: 'Ihre nächste progressive Einheit steht mit Premium bereit.',
     primeMember: '★ PRIME-MITGLIED',

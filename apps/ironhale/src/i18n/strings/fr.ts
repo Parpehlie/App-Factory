@@ -106,6 +106,7 @@ export const fr: Strings = {
     ready: 'Prêt quand vous l\'êtes.',
     done: 'FAIT',
     freeSession: (current) => `Séance ${current} / 6 gratuite`,
+    freePlanComplete: 'Formule gratuite terminée · 6 / 6',
     freeRemaining: (n) => `${n} séance${n === 1 ? '' : 's'} gratuite${n === 1 ? '' : 's'}, sans carte.`,
     freeReady: 'Votre prochaine séance progressive vous attend avec Premium.',
     primeMember: '★ MEMBRE PRIME',

@@ -163,7 +163,7 @@ export default function Today() {
         {!isPremium ? (
           <View style={[s.freePlan, locked && s.freePlanComplete]}>
             <View style={s.freeCopy}>
-              <Text style={s.freeEyebrow}>{t.today.freeSession(Math.min(workout.index, 6))}</Text>
+              <Text style={s.freeEyebrow}>{locked ? t.today.freePlanComplete : t.today.freeSession(Math.min(workout.index, 6))}</Text>
               <Text style={s.freeBody}>{freeLeft > 0 ? t.today.freeRemaining(freeLeft) : t.today.freeReady}</Text>
             </View>
             <View style={s.freeProgress}><View style={[s.freeProgressFill, { width: `${Math.min(100, state.history.length / 6 * 100)}%` }]} /></View>
@@ -192,7 +192,7 @@ export default function Today() {
                       <Text style={s.historyTitle}>{planned ? t.workoutTitles[planned.titleKey] : t.today.sessionN(result.workoutIndex)}</Text>
                       <Text style={s.historyMeta}>{formatDate(result.completedAt, { month: 'short', day: 'numeric' })} · {t.today.minutes(Math.max(1, Math.round(result.durationSeconds / 60)))}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color="#AAB2AC" />
+                    <Text style={s.historySessionTag}>{t.today.sessionN(result.workoutIndex)}</Text>
                   </View>
                 );
               })}
@@ -272,4 +272,5 @@ const s = StyleSheet.create({
   historyCheck: { width: 29, height: 29, borderRadius: 10, backgroundColor: colors.green, alignItems: 'center', justifyContent: 'center' },
   historyTitle: { color: colors.ink, fontSize: 16, fontWeight: '800' },
   historyMeta: { color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 3, textTransform: 'capitalize' },
+  historySessionTag: { color: colors.green, fontSize: 12, fontWeight: '900', backgroundColor: colors.soft, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 9, overflow: 'hidden' },
 });

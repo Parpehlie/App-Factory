@@ -67,9 +67,14 @@ export function createInitialProgress(profile: Profile): Record<string, Exercise
  * Callers keep a 12-week runway ahead, so Premium never reaches an artificial
  * "block complete" endpoint.
  */
+/** Recovery spacing between sessions (§9). Exported so the schedule can be re-anchored
+ *  to real completion times without duplicating the cadence rule. */
+export const recoveryGapDays = (daysPerWeek: Profile['daysPerWeek']): number =>
+  daysPerWeek === 2 ? 3.5 : daysPerWeek === 3 ? 2.3 : 1.75;
+
 export function generatePlan(profile: Profile, progress = createInitialProgress(profile), startAt = Date.now(), workoutCount = profile.daysPerWeek * 12): PlannedWorkout[] {
   const split = SPLITS[profile.daysPerWeek];
-  const gapDays = profile.daysPerWeek === 2 ? 3.5 : profile.daysPerWeek === 3 ? 2.3 : 1.75;
+  const gapDays = recoveryGapDays(profile.daysPerWeek);
   const total = Math.max(profile.daysPerWeek * 12, workoutCount);
   return Array.from({length:total}, (_,index) => {
     const template = split[index % split.length]!;
@@ -89,7 +94,11 @@ export function generatePlan(profile: Profile, progress = createInitialProgress(
       const p = progress[chosen.id];
       const baseLoad=p?.currentLoadKg ?? startingLoad(chosen,profile);
       const plannedLoad=isDeload?baseLoad*0.9:week===6?baseLoad+(chosen.loadIncrementKg??1):baseLoad;
-      exercises.push({ exerciseId:chosen.id, sets:isDeload ? 2 : 3, repMin:8, repMax:chosen.progressionMode === 'load' ? 12 : 15, targetLoadKg:chosen.progressionMode === 'load' ? Math.round(plannedLoad * 10)/10 : undefined, targetRir:2, substitutedFrom:chosen.id !== target.id ? target.id : undefined, substitutionReason:chosen.id !== target.id ? activeFlags(profile).find((j) => target.jointLoad[j] > SAFE) : undefined });
+      // Only flag a real joint adaptation. A swap forced purely by pattern de-dup (e.g. the
+      // second squat of a 4-day lower day) is variety, not protection — labelling it would
+      // show a false "adapted for your joint" banner to members with no sensitive joints (§2).
+      const subReason = chosen.id !== target.id ? activeFlags(profile).find((j) => target.jointLoad[j] > SAFE) : undefined;
+      exercises.push({ exerciseId:chosen.id, sets:isDeload ? 2 : 3, repMin:8, repMax:chosen.progressionMode === 'load' ? 12 : 15, targetLoadKg:chosen.progressionMode === 'load' ? Math.round(plannedLoad * 10)/10 : undefined, targetRir:2, substitutedFrom:subReason ? target.id : undefined, substitutionReason:subReason });
     }
     // Home + sensitive shoulder: the vertical pull is removed program-wide (§7), so add a
     // compensating row set on the days that carry a row (the vertical-pull day itself has
@@ -130,8 +139,13 @@ export function applyProgress(state: AppState, results: ExerciseResult[]): Recor
     const underMin = completed.length > 0 && completed.every((s) => s.reps < 8);
     let next = {...previous, consecutiveUnderMin:underMin ? previous.consecutiveUnderMin+1 : 0};
     if (exercise.progressionMode === 'load') {
-      const usedLoad = Math.max(previous.currentLoadKg, ...completed.map((s) => s.loadKg));
-      next.currentLoadKg = allTop ? usedLoad + (exercise.loadIncrementKg ?? 1) : next.consecutiveUnderMin >= 2 ? Math.round(usedLoad*0.9*10)/10 : usedLoad;
+      // Progress from what was actually lifted on the completed sets, not from the standing
+      // target: hitting every rep with an intentionally lighter load must not stack an
+      // increment on top of a weight the member never proved (RIR-2, never to failure — §9).
+      const liftedLoad = Math.max(0, ...completed.map((s) => s.loadKg));
+      next.currentLoadKg = allTop
+        ? liftedLoad + (exercise.loadIncrementKg ?? 1)
+        : next.consecutiveUnderMin >= 2 ? Math.round(previous.currentLoadKg*0.9*10)/10 : previous.currentLoadKg;
       if (next.consecutiveUnderMin >= 2) next.consecutiveUnderMin = 0;
     } else if (allTop && exercise.tierChain) next.tierIndex = Math.min(exercise.tierChain.length-1, previous.tierIndex+1);
     progress[result.exerciseId] = next;
