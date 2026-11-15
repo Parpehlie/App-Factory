@@ -239,87 +239,25 @@ export function HubPage() {
         <section id="atlas" className="section atlas-section" aria-labelledby="atlas-title">
           <div className="wrap">
             <div className="atlas-spotlight">
-              <ContourField
-                className="atlas-spotlight-field"
-                color="31,59,217"
-                levels={9}
-                cell={18}
-                scale={0.0038}
-                interactive={false}
-              />
+              <div className="atlas-copy">
+                <span className="atlas-pill">{ATLAS_HIGHLIGHT.badge}</span>
+                <h2 id="atlas-title" className="atlas-title">
+                  {ATLAS_HIGHLIGHT.title}
+                </h2>
+                <p className="atlas-lead">{ATLAS_HIGHLIGHT.lead}</p>
 
-              <div className="atlas-head">
-                <div>
-                  <span className="atlas-pill">{ATLAS_HIGHLIGHT.badge}</span>
-                  <h2 id="atlas-title" className="atlas-title">
-                    {ATLAS_HIGHLIGHT.title}
-                  </h2>
-                  <p className="atlas-lead">{ATLAS_HIGHLIGHT.lead}</p>
-                  <p className="atlas-promise">{ATLAS_HIGHLIGHT.promise}</p>
-                </div>
+                <ul className="atlas-chips">
+                  {ATLAS_HIGHLIGHT.highlights.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
 
-                <div className="atlas-kpi-box">
-                  <span className="atlas-kpi-value">{ATLAS_HIGHLIGHT.speedMetric}</span>
-                  <span className="atlas-kpi-label">{ATLAS_HIGHLIGHT.speedLabel}</span>
-                </div>
-              </div>
-
-              <div className="atlas-doors">
-                {ATLAS_HIGHLIGHT.offers.map((offer) => (
-                  <a
-                    key={offer.title}
-                    href={offer.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="atlas-door"
-                  >
-                    <p className="atlas-door-label">{offer.label}</p>
-                    <h3>{offer.title}</h3>
-                    <p className="atlas-door-text">{offer.text}</p>
-                    <ul className="atlas-chips">
-                      {offer.chips.map((chip) => (
-                        <li key={chip}>{chip}</li>
-                      ))}
-                    </ul>
-                    <span className="atlas-door-link">Voir l’offre sur Atlas ↗</span>
-                  </a>
-                ))}
-              </div>
-
-              <div className="atlas-case">
-                <div className="atlas-case-visuals">
-                  <div className="atlas-case-main">
-                    <img
-                      src={ATLAS_HIGHLIGHT.testimonial.mainShot}
-                      alt={ATLAS_HIGHLIGHT.testimonial.mainAlt}
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="atlas-case-companion">
-                    <img
-                      src={ATLAS_HIGHLIGHT.testimonial.companionShot}
-                      alt={ATLAS_HIGHLIGHT.testimonial.companionAlt}
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-
-                <div className="atlas-case-copy">
-                  <span className="atlas-case-kicker">Réalisation client</span>
-                  <h3>{ATLAS_HIGHLIGHT.testimonial.client}</h3>
-                  <p className="atlas-case-role">{ATLAS_HIGHLIGHT.testimonial.role}</p>
+                <div className="atlas-quote-card">
                   <blockquote>« {ATLAS_HIGHLIGHT.testimonial.quote} »</blockquote>
-                  <p className="atlas-case-author">— {ATLAS_HIGHLIGHT.testimonial.author}</p>
-
-                  <div className="atlas-cta-row">
-                    <a
-                      href={ATLAS_HIGHLIGHT.siteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-primary"
-                    >
-                      Visiter atlas.raphael-plassart.com ↗
-                    </a>
+                  <div className="atlas-quote-meta">
+                    <span>
+                      <strong>{ATLAS_HIGHLIGHT.testimonial.client}</strong> · {ATLAS_HIGHLIGHT.testimonial.role}
+                    </span>
                     <a
                       href={ATLAS_HIGHLIGHT.caseStudyUrl}
                       target="_blank"
@@ -328,11 +266,69 @@ export function HubPage() {
                     >
                       Lire l’étude de cas ↗
                     </a>
-                    <a href={PROFILE.phoneHref} className="link-inline">
-                      Appeler le {PROFILE.phoneDisplay}
-                    </a>
                   </div>
                 </div>
+
+                <div className="atlas-cta-row">
+                  <a
+                    href={ATLAS_HIGHLIGHT.siteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                  >
+                    <span>Découvrir atlas.raphael-plassart.com</span>
+                    <svg
+                      className="btn-icon btn-icon--ne"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M4.5 11.5L11.5 4.5M11.5 4.5H5.75M11.5 4.5V10.25"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </a>
+                  <a href={PROFILE.phoneHref} className="btn btn-ghost-ink">
+                    Appeler le {PROFILE.phoneDisplay}
+                  </a>
+                </div>
+              </div>
+
+              <div className="atlas-preview">
+                <a
+                  href={ATLAS_HIGHLIGHT.siteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="atlas-browser"
+                  aria-label="Ouvrir le site Atlas dans un nouvel onglet"
+                >
+                  <div className="atlas-browser-bar">
+                    <span className="atlas-browser-dots" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <span className="atlas-browser-url">atlas.raphael-plassart.com</span>
+                    <span className="atlas-browser-speed">
+                      <strong>{ATLAS_HIGHLIGHT.speedMetric}</strong> sur 4G
+                    </span>
+                  </div>
+                  <div className="atlas-browser-screen">
+                    <img
+                      src={ATLAS_HIGHLIGHT.previewImage}
+                      alt={ATLAS_HIGHLIGHT.previewAlt}
+                      width={1280}
+                      height={960}
+                      loading="lazy"
+                    />
+                  </div>
+                </a>
               </div>
             </div>
           </div>
